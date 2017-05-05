@@ -9,23 +9,23 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-public class SampleController
+public class Controller
 {
   @Trackable
-  @RequestMapping(value = RestEndpoints.API1, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<String> api1(HttpServletRequest request) throws Exception {
+  @RequestMapping(value = RestEndpoints.ENDPOINT_A, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<String> funcA(HttpServletRequest request) throws Exception {
     return new ResponseEntity<>(request.getRequestURI(), HttpStatus.OK);
   }
 
   @Trackable
-  @RequestMapping(value = RestEndpoints.API2, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<String> api2(HttpServletRequest request) throws Exception {
+  @RequestMapping(value = RestEndpoints.ENDPOINT_B, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<String> funcB(HttpServletRequest request) throws Exception {
     return new ResponseEntity<>(request.getRequestURI(), HttpStatus.OK);
   }
 
   @Trackable
-  @RequestMapping(value = RestEndpoints.API3, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<String> api3(HttpServletRequest request) throws Exception {
+  @RequestMapping(value = RestEndpoints.ENDPOINT_C, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<String> funcC(HttpServletRequest request) throws Exception {
     return new ResponseEntity<>(request.getRequestURI(), HttpStatus.OK);
   }
 }

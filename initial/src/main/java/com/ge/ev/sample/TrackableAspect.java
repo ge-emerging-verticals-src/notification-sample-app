@@ -10,10 +10,10 @@ import org.springframework.stereotype.Component;
 @Aspect
 public class TrackableAspect {
   @Autowired
-  HealthCheckMonitor healthCheckMonitor;
+  EndpointMonitor endpointMonitor;
 
   @After("@annotation(trackable) && args(request)")
   public void processLoggableEvent(Trackable trackable, HttpServletRequest request) throws Throwable {
-    healthCheckMonitor.TrackRequests(request.getRequestURI());
+    endpointMonitor.TrackRequests(request.getRequestURI());
   }
 }

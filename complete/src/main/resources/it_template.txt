@@ -1,0 +1,40 @@
+<!DOCTYPE html SYSTEM "http://www.thymeleaf.org/dtd/xhtml1-strict-thymeleaf-4.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Usage Report</title>
+</head>
+
+<body>
+<div class="panel panel-default">
+    <div class="panel-body">
+        Hello,
+
+        <span th:text="${alert}">1</span> alert report :
+        <h2>Details</h2>
+        <table>
+          <thead>
+              <tr>
+                  <td align="center"><b>Heap Usage</b></td>
+                  <td align="center"><b>Endpoint hits</b></td>
+                  <td align="center"><b>/A</b></td>
+                  <td align="center"><b>/B</b></td>
+                  <td align="center"><b>/C</b></td>
+              </tr>
+          </thead>
+          <tbody>
+              <tr>
+                  <td align="right"><span th:text="${heap_usage}">1</span>%</td>
+                  <td align="right"><span th:text="${endpoint_hits}">1</span></td>
+                  <td align="right"><span th:text="${a_count}">1</span></td>
+                  <td align="right"><span th:text="${b_count}">1</span></td>
+                  <td align="right"><span th:text="${c_count}">1</span></td>
+              </tr>
+          <tr>
+          </tbody>
+        </table>
+        <br>
+        <strong>Sent by the Email Notification Framework, powered by Predix.</strong>
+    </div>
+</div>
+</body>
+</html>
