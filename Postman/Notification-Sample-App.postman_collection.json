@@ -122,7 +122,7 @@
 			"response": []
 		},
 		{
-			"name": "Upload template",
+			"name": "Upload Template",
 			"request": {
 				"url": "https://{{url}}/v1/tenants/{{tenant}}/templates/{{template_uuid}}/upload",
 				"method": "POST",
@@ -150,7 +150,7 @@
 			"response": []
 		},
 		{
-			"name": "Add Matcher",
+			"name": "Create Matcher",
 			"request": {
 				"url": "https://{{url}}/v1/tenants/{{tenant}}/templates/{{template_uuid}}/matchers",
 				"method": "POST",
@@ -170,12 +170,12 @@
 					"mode": "raw",
 					"raw": "{\n\t\"matchers\" : \"$.[?(@.alert in ['HIGH'])]\"\n}"
 				},
-				"description": "AddMatchers"
+				"description": ""
 			},
 			"response": []
 		},
 		{
-			"name": "Get Matcher",
+			"name": "Get Matchers",
 			"request": {
 				"url": "https://{{url}}/v1/tenants/{{tenant}}/templates/{{template_uuid}}/matchers",
 				"method": "GET",
@@ -192,7 +192,7 @@
 			"response": []
 		},
 		{
-			"name": "Add Recipients",
+			"name": "Create Recipients",
 			"request": {
 				"url": "https://{{url}}/v1/tenants/{{tenant}}/templates/{{template_uuid}}/matchers/{{matcher_uuid}}/recipients",
 				"method": "POST",
@@ -212,7 +212,7 @@
 					"mode": "raw",
 					"raw": "{\n   \"recipients\" : [\"dat.nguyen@ge.com\"]\n}"
 				},
-				"description": "AddMatchers"
+				"description": ""
 			},
 			"response": []
 		},
