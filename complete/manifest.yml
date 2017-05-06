@@ -1,16 +1,16 @@
 ---
 applications:
-- name: notification-sample-complete
+- name: {sample-app-name}
   memory: 1G
   instances: 1
   timeout: 180
-  host: notification-sample-complete
+  host: {sample-app-name}
   path: ./target/ev-notification-sample-1.0.0.jar
   buildpack: https://github.com/cloudfoundry/java-buildpack.git
   services:
-    - poc-uaa
-    - notification-hms
+    - {uaa-instance-name}
+    - {notification-instance-name}
   env:
-    accessTokenEndpointUrl: "https://6ba32cf8-bd8b-4420-b271-d3097bbee2cd.predix-uaa.run.aws-usw02-pr.ice.predix.io/oauth/token"
-    accessTokenAuthString: "ZGV2OmRldjEyMw=="
-    notificationServiceName: "notification-hms"
+    accessTokenEndpointUrl: "{uua_token_endpoint}"
+    accessTokenAuthString: "{uaa_auth_string}"
+    notificationServiceName: "{notification-instance-name}"
