@@ -1,0 +1,270 @@
+{
+	"variables": [],
+	"info": {
+		"name": "Notification-Sample-App",
+		"_postman_id": "dde7d9ca-c342-0dfb-8a05-71b9c6ae3873",
+		"description": "",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Get UAA Token",
+			"request": {
+				"url": "https://{{uaa-url}}/oauth/token",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/x-www-form-urlencoded",
+						"description": ""
+					},
+					{
+						"key": "Authorization",
+						"value": "Basic {{uaa-auth}}",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "grant_type",
+							"value": "client_credentials",
+							"type": "text",
+							"enabled": true
+						}
+					]
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Create Email Configuration",
+			"request": {
+				"url": "https://{{url}}/v1/tenants/{{tenant}}/configurations",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "bearer {{token}}",
+						"description": ""
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "[{\n      \"protocol\": \"smtp\",\n      \"host\": \"smtp.sparkpostmail.com\",\n      \"port\": 587,\n      \"smtpAuth\": true,\n      \"smtpStarttlsEnable\": true,\n      \"mailFrom\": \"ev.notification.sample@sparkpostbox.com\",\n      \"mailUsername\": \"SMTP_Injection\",\n      \"mailPassword\": \"{{password}}\"\n}]"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Get Configurations",
+			"request": {
+				"url": "https://{{url}}/v1/tenants/{{tenant}}/configurations",
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					},
+					{
+						"key": "Authorization",
+						"value": "bearer {{token}}",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "grant_type",
+							"value": "client_credentials",
+							"type": "text",
+							"enabled": true
+						}
+					]
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Create Template",
+			"request": {
+				"url": "https://{{url}}/v1/tenants/{{tenant}}/templates",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"description": ""
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"domain\" : \"ev.notification.ge.com\",\n    \"description\": \"Sample Template\",\n    \"name\" : \"test-template\",\n    \"subjectTemplate\" : \"test template\"\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Upload template",
+			"request": {
+				"url": "https://{{url}}/v1/tenants/{{tenant}}/templates/{{template_uuid}}/upload",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"enabled": true,
+							"src": "template.txt",
+							"value": ""
+						}
+					]
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Add Matcher",
+			"request": {
+				"url": "https://{{url}}/v1/tenants/{{tenant}}/templates/{{template_uuid}}/matchers",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"description": ""
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"matchers\" : \"$.[?(@.alert in ['HIGH'])]\"\n}"
+				},
+				"description": "AddMatchers"
+			},
+			"response": []
+		},
+		{
+			"name": "Get Matcher",
+			"request": {
+				"url": "https://{{url}}/v1/tenants/{{tenant}}/templates/{{template_uuid}}/matchers",
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"description": ""
+					}
+				],
+				"body": {},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Add Recipients",
+			"request": {
+				"url": "https://{{url}}/v1/tenants/{{tenant}}/templates/{{template_uuid}}/matchers/{{matcher_uuid}}/recipients",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"description": ""
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n   \"recipients\" : [\"dat.nguyen@ge.com\"]\n}"
+				},
+				"description": "AddMatchers"
+			},
+			"response": []
+		},
+		{
+			"name": "Send Email",
+			"request": {
+				"url": "https://{{url}}/v1/tenants/{{tenant}}/email?configuration={{configuration}}",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					},
+					{
+						"key": "Authorization",
+						"value": "bearer {{token}}",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \t\"body\":\"Here is your daily usage snapshot\",\n  \t\"subject\":\"Snapshot\",\n  \t\"fromEmail\":\"ev.notification.sample@sparkpostbox.com\",\n  \t\"fromName\" :\"Endpoint Monitor\",\n  \t\"important\" : true,\n  \t\"recipients\":\n  \t[{\n  \t\t\"email\":\"test@ge.com\",\n  \t\t\"recipientName\":\"Dat Nguyen\",\n  \t\t\"type\":\"to\"\n  \t}]\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Send Template Email",
+			"request": {
+				"url": "https://{{url}}/v1/tenants/{{tenant}}/email/template/{{template_uuid}}?configuration={{configuration}}",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"description": ""
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\"heap_usage\": 50.0,\n\"endpoint_hits\": 23540,\n\"alert\":\"HIGH\"\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		}
+	]
+}

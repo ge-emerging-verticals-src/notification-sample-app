@@ -307,5 +307,4 @@ public class EndpointMonitor
       ex.printStackTrace();
     }
   }
-
 }
