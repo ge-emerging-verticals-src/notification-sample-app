@@ -14,14 +14,14 @@ import com.ge.ev.notification.client.domain.Template;
 import com.ge.ev.notification.client.domain.Tenant;
 import com.ge.ev.notification.client.exceptions.NotificationClientException;
 import com.ge.ev.notification.client.exceptions.RequestException;
-import com.ge.ev.notification.client.requests.configuration.ConfigurationRequestBody;
+import com.ge.ev.notification.client.requests.configuration.CreateConfigurationRequestBody;
 import com.ge.ev.notification.client.requests.email.RecipientType;
 import com.ge.ev.notification.client.requests.email.SendEmailRequestBody;
 import com.ge.ev.notification.client.requests.email.SendEmailRequestBodyRecipient;
-import com.ge.ev.notification.client.requests.email.TemplateEmailRequestBody;
+import com.ge.ev.notification.client.requests.email.SendTemplateEmailRequestBody;
 import com.ge.ev.notification.client.requests.template.CreateMatchersRequestBody;
 import com.ge.ev.notification.client.requests.template.CreateRecipientsRequestBody;
-import com.ge.ev.notification.client.requests.template.CreateTemplateRequestBody;
+import com.ge.ev.notification.client.requests.template.TemplateRequestBody;
 import com.ge.ev.notification.client.requests.tenant.UpdateTenantConfigurationRequestBody;
 import com.ge.ev.notification.client.response.SendEmailResponse;
 import com.ge.ev.notification.vcap.ServiceEnvironment;
@@ -97,8 +97,8 @@ public class EndpointMonitor
 
     String token = uaaTokenRequester.getToken();
 
-    //Create Configuration Request Body
-    ConfigurationRequestBody configurationRequestBody = new ConfigurationRequestBody.ConfigurationRequestBodyBuilder()
+    //Create Configuration
+    Configuration configuration = new Configuration.ConfigurationBuilder()
         .setProtocol("smtp")
         .setHost("smtp.sparkpostmail.com")
         .setPort(587)
@@ -109,10 +109,17 @@ public class EndpointMonitor
         .setMailPassword("6fb83e32b23ae24d230742a15f09180c92219747")
         .build();
 
+    //Create Configuration Request Body
+    CreateConfigurationRequestBody configurationRequestBody = new CreateConfigurationRequestBody.CreateConfigurationRequestBodyBuilder()
+        .addConfigurations(configuration)
+        .build();
+
     //Send Create Configuration Request
     try {
       this.configuration = notificationServiceClient.createConfiguration(token, configurationRequestBody);
     } catch (NotificationClientException e) {
+      e.printStackTrace();
+    } catch (RequestException e) {
       e.printStackTrace();
     }
 
@@ -128,10 +135,10 @@ public class EndpointMonitor
     //Send Create Template Request
     try
     {
-      CreateTemplateRequestBody createTemplateRequestBody = new CreateTemplateRequestBody.CreateTemplateRequestBodyBuilder("ev.notification.ge.com", "usage_alert", "Usage alert template" )
+      TemplateRequestBody templateRequestBody = new TemplateRequestBody.TemplateRequestBodyBuilder("ev.notification.ge.com", "usage_alert", "Usage alert template" )
           .setSubjectTemplate("Usage Report")
           .build();
-      this.template = notificationServiceClient.createTemplate(token, createTemplateRequestBody, in);
+      this.template = notificationServiceClient.createTemplate(token, templateRequestBody, in);
     }
     catch (RequestException e)
     {
@@ -145,7 +152,7 @@ public class EndpointMonitor
     //Create a matcher for HIGH alerts
     try {
       CreateMatchersRequestBody createMatchersRequestBody = new CreateMatchersRequestBody.CreateMatchersRequestBodyBuilder("$.[?(@.alert in ['HIGH'])]").build();
-      this.highAlertMatcher = notificationServiceClient.createMatcher(token, this.template.getTemplateUuid(), createMatchersRequestBody);
+      this.highAlertMatcher = notificationServiceClient.createMatcher(token, this.template, createMatchersRequestBody);
     }
     catch (RequestException e) {
       e.printStackTrace();
@@ -156,7 +163,7 @@ public class EndpointMonitor
     //Create recipient list for high alert matcher
     try {
       CreateRecipientsRequestBody createRecipientsRequestBody = new CreateRecipientsRequestBody.CreateRecipientsRequestBodyBuilder().addRecipient("it.director@ev.notification.ge.com").build();
-      List<Recipient> recipients = notificationServiceClient.createRecipients(token, this.template.getTemplateUuid(), this.highAlertMatcher.getMatchersUuid(), createRecipientsRequestBody);
+      List<Recipient> recipients = notificationServiceClient.createRecipients(token, this.template, this.highAlertMatcher, createRecipientsRequestBody);
       for (Recipient recipient : recipients) {
         System.out.println(recipient.toJson());
       }
@@ -169,7 +176,7 @@ public class EndpointMonitor
     //Create a matcher for LOW alerts
     try {
       CreateMatchersRequestBody createMatchersRequestBody = new CreateMatchersRequestBody.CreateMatchersRequestBodyBuilder("$.[?(@.alert in ['LOW'])]").build();
-      this.lowAlertMatcher = notificationServiceClient.createMatcher(token, this.template.getTemplateUuid(), createMatchersRequestBody);
+      this.lowAlertMatcher = notificationServiceClient.createMatcher(token, this.template, createMatchersRequestBody);
     }
     catch (RequestException e) {
       e.printStackTrace();
@@ -180,7 +187,7 @@ public class EndpointMonitor
     //Create recipient list for high alert matcher
     try {
       CreateRecipientsRequestBody createRecipientsRequestBody = new CreateRecipientsRequestBody.CreateRecipientsRequestBodyBuilder().addRecipient("it@ev.notification.ge.com").build();
-      List<Recipient> recipients = notificationServiceClient.createRecipients(token, this.template.getTemplateUuid(), this.lowAlertMatcher.getMatchersUuid(), createRecipientsRequestBody);
+      List<Recipient> recipients = notificationServiceClient.createRecipients(token, this.template, this.lowAlertMatcher, createRecipientsRequestBody);
       for (Recipient recipient : recipients) {
         System.out.println(recipient.toJson());
       }
@@ -221,7 +228,7 @@ public class EndpointMonitor
     try
     {
       String token = uaaTokenRequester.getToken();
-      SendEmailResponse sendEmailResponse = notificationServiceClient.sendEmail(token, this.configuration.getUuid(), sendEmailRequestBody);
+      SendEmailResponse sendEmailResponse = notificationServiceClient.sendEmail(token, this.configuration, sendEmailRequestBody);
     }
     catch (RequestException e)
     {
@@ -257,7 +264,7 @@ public class EndpointMonitor
     Double heap_usage = ((runtime.totalMemory() - runtime.freeMemory()) / runtime.totalMemory()) * 100.0;
 
     //Set template email parameters
-    TemplateEmailRequestBody sendEmailRequestBody = new TemplateEmailRequestBody.TemplateEmailRequestBodyBuilder()
+    SendTemplateEmailRequestBody sendTemplateEmailRequestBody = new SendTemplateEmailRequestBody.SendTemplateEmailRequestBodyBuilder()
         .addKeyValue("heap_usage", heap_usage)
         .addKeyValue("endpoint_hits", hits)
         .addKeyValue("a_count", this.requests.get(ENDPOINT_A))
@@ -269,7 +276,7 @@ public class EndpointMonitor
     //Send template email request
     try {
       String token = uaaTokenRequester.getToken();
-      SendEmailResponse sendEmailResponse = notificationServiceClient.sendTemplateEmail(token, this.configuration.getUuid(), sendEmailRequestBody, this.template.getTemplateUuid());
+      SendEmailResponse sendEmailResponse = notificationServiceClient.sendTemplateEmail(token, this.configuration,  this.template, sendTemplateEmailRequestBody);
     }
     catch (RequestException e)
     {
@@ -287,6 +294,8 @@ public class EndpointMonitor
     try {
       List<NotificationEvent> events = notificationServiceClient.getEvents(token, notificationReferenceUuid);
     } catch (NotificationClientException e) {
+      e.printStackTrace();
+    } catch (RequestException e) {
       e.printStackTrace();
     }
   }
