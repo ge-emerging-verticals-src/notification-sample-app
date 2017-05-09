@@ -43,6 +43,9 @@ import org.springframework.stereotype.Component;
 @Component
 public class EndpointMonitor
 {
+  private static final String TEST_IT_EMAIL = "it@notification.ge.com";
+  private static final String TEST_IT_DIRECTOR_EMAIL = "it-director@notification.ge.com";
+
   private enum AlertLevel
   {
     HIGH,
@@ -90,9 +93,6 @@ public class EndpointMonitor
 
     //Create Notification Service Client
     notificationServiceClient = new NotificationServiceClientBuilder(notificationServiceEnvironmentElement)
-        .setVersion("v1")
-        .setBaseUrl("https://ev-notification-service-dev.run.aws-usw02-pr.ice.predix.io")
-        .setTenantUuid("77e36836-cf4d-49a7-81fb-3a5311a454ff")
         .build();
 
     String token = uaaTokenRequester.getToken();
@@ -104,7 +104,7 @@ public class EndpointMonitor
         .setPort(587)
         .setSmtpAuth(true)
         .setSmtpStarttlsEnable(true)
-        .setMailFrom("ev.notification.sample@sparkpost.com")
+        .setMailFrom("ev.notification.sample@sparkpostbox.com")
         .setMailUsername("SMTP_Injection")
         .setMailPassword("6fb83e32b23ae24d230742a15f09180c92219747")
         .build();
@@ -118,9 +118,9 @@ public class EndpointMonitor
     try {
       this.configuration = notificationServiceClient.createConfiguration(token, configurationRequestBody);
     } catch (NotificationClientException e) {
-      e.printStackTrace();
+      printNotificationException(e);
     } catch (RequestException e) {
-      e.printStackTrace();
+      printRequestException(e);
     }
 
     //Load template file
@@ -140,13 +140,10 @@ public class EndpointMonitor
           .build();
       this.template = notificationServiceClient.createTemplate(token, templateRequestBody, in);
     }
-    catch (RequestException e)
-    {
-      e.printStackTrace();
-    }
-    catch (NotificationClientException e)
-    {
-      e.printStackTrace();
+    catch (NotificationClientException e) {
+      printNotificationException(e);
+    } catch (RequestException e) {
+      printRequestException(e);
     }
 
     //Create a matcher for HIGH alerts
@@ -154,23 +151,23 @@ public class EndpointMonitor
       CreateMatchersRequestBody createMatchersRequestBody = new CreateMatchersRequestBody.CreateMatchersRequestBodyBuilder("$.[?(@.alert in ['HIGH'])]").build();
       this.highAlertMatcher = notificationServiceClient.createMatcher(token, this.template, createMatchersRequestBody);
     }
-    catch (RequestException e) {
-      e.printStackTrace();
-    } catch (NotificationClientException e) {
-      e.printStackTrace();
+    catch (NotificationClientException e) {
+      printNotificationException(e);
+    } catch (RequestException e) {
+      printRequestException(e);
     }
 
     //Create recipient list for high alert matcher
     try {
-      CreateRecipientsRequestBody createRecipientsRequestBody = new CreateRecipientsRequestBody.CreateRecipientsRequestBodyBuilder().addRecipient("it.director@ev.notification.ge.com").build();
+      CreateRecipientsRequestBody createRecipientsRequestBody = new CreateRecipientsRequestBody.CreateRecipientsRequestBodyBuilder().addRecipient(TEST_IT_DIRECTOR_EMAIL).build();
       List<Recipient> recipients = notificationServiceClient.createRecipients(token, this.template, this.highAlertMatcher, createRecipientsRequestBody);
       for (Recipient recipient : recipients) {
         System.out.println(recipient.toJson());
       }
+    }catch (NotificationClientException e) {
+      printNotificationException(e);
     } catch (RequestException e) {
-      e.printStackTrace();
-    } catch (NotificationClientException e) {
-      e.printStackTrace();
+      printRequestException(e);
     }
 
     //Create a matcher for LOW alerts
@@ -178,23 +175,23 @@ public class EndpointMonitor
       CreateMatchersRequestBody createMatchersRequestBody = new CreateMatchersRequestBody.CreateMatchersRequestBodyBuilder("$.[?(@.alert in ['LOW'])]").build();
       this.lowAlertMatcher = notificationServiceClient.createMatcher(token, this.template, createMatchersRequestBody);
     }
-    catch (RequestException e) {
-      e.printStackTrace();
-    } catch (NotificationClientException e) {
-      e.printStackTrace();
+    catch (NotificationClientException e) {
+      printNotificationException(e);
+    } catch (RequestException e) {
+      printRequestException(e);
     }
 
     //Create recipient list for high alert matcher
     try {
-      CreateRecipientsRequestBody createRecipientsRequestBody = new CreateRecipientsRequestBody.CreateRecipientsRequestBodyBuilder().addRecipient("it@ev.notification.ge.com").build();
+      CreateRecipientsRequestBody createRecipientsRequestBody = new CreateRecipientsRequestBody.CreateRecipientsRequestBodyBuilder().addRecipient(TEST_IT_EMAIL).build();
       List<Recipient> recipients = notificationServiceClient.createRecipients(token, this.template, this.lowAlertMatcher, createRecipientsRequestBody);
       for (Recipient recipient : recipients) {
         System.out.println(recipient.toJson());
       }
-    } catch (RequestException e) {
-      e.printStackTrace();
     } catch (NotificationClientException e) {
-      e.printStackTrace();
+      printNotificationException(e);
+    } catch (RequestException e) {
+      printRequestException(e);
     }
   }
 
@@ -213,7 +210,7 @@ public class EndpointMonitor
     this.requests.keySet().stream().forEach(s -> emailBody.append(s + "=" + this.requests.get(s) + "\n"));
 
     //Create recipients
-    SendEmailRequestBodyRecipient sendEmailRequestBodyRecipient = new SendEmailRequestBodyRecipient.SendEmailRequestBodyRecipientBuilder("Dat Nguyen", "dat.nguyen@ge.com", RecipientType.to).build();
+    SendEmailRequestBodyRecipient sendEmailRequestBodyRecipient = new SendEmailRequestBodyRecipient.SendEmailRequestBodyRecipientBuilder("it", TEST_IT_EMAIL, RecipientType.to).build();
 
     //Create email body
     SendEmailRequestBody sendEmailRequestBody = new SendEmailRequestBody.SendEmailRequestBodyBuilder()
@@ -229,13 +226,12 @@ public class EndpointMonitor
     {
       String token = uaaTokenRequester.getToken();
       SendEmailResponse sendEmailResponse = notificationServiceClient.sendEmail(token, this.configuration, sendEmailRequestBody);
-    }
-    catch (RequestException e)
-    {
-      e.printStackTrace();
+      printEmailEvents(sendEmailResponse.getNotificationReferenceUuid());
     }
     catch (NotificationClientException e) {
-      e.printStackTrace();
+      printNotificationException(e);
+    } catch (RequestException e) {
+      printRequestException(e);
     }
   }
 
@@ -243,11 +239,11 @@ public class EndpointMonitor
   {
     AlertLevel alertLevel = AlertLevel.NONE;
 
-    if (this.hits >= 20)
+    if (this.hits != 0L && this.hits % 20 == 0 )
     {
       alertLevel = AlertLevel.HIGH;
     }
-    else if (this.hits >= 10)
+    else if (this.hits != 0L && this.hits % 10 == 0)
     {
       alertLevel = AlertLevel.LOW;
     }
@@ -261,7 +257,7 @@ public class EndpointMonitor
   private void SendAlert(AlertLevel alertLevel)
   {
     Runtime runtime = Runtime.getRuntime();
-    Double heap_usage = ((runtime.totalMemory() - runtime.freeMemory()) / runtime.totalMemory()) * 100.0;
+    Double heap_usage = ( (double) (runtime.totalMemory() - runtime.freeMemory()) /  runtime.totalMemory() * 1.0) * 100.0;
 
     //Set template email parameters
     SendTemplateEmailRequestBody sendTemplateEmailRequestBody = new SendTemplateEmailRequestBody.SendTemplateEmailRequestBodyBuilder()
@@ -277,6 +273,7 @@ public class EndpointMonitor
     try {
       String token = uaaTokenRequester.getToken();
       SendEmailResponse sendEmailResponse = notificationServiceClient.sendTemplateEmail(token, this.configuration,  this.template, sendTemplateEmailRequestBody);
+      System.out.println(sendEmailResponse.toJson());
     }
     catch (RequestException e)
     {
@@ -293,10 +290,11 @@ public class EndpointMonitor
     String token = uaaTokenRequester.getToken();
     try {
       List<NotificationEvent> events = notificationServiceClient.getEvents(token, notificationReferenceUuid);
+      events.stream().forEach(e -> System.out.println(e.toJson()) );
     } catch (NotificationClientException e) {
-      e.printStackTrace();
+      printNotificationException(e);
     } catch (RequestException e) {
-      e.printStackTrace();
+     printRequestException(e);
     }
   }
 
@@ -304,16 +302,36 @@ public class EndpointMonitor
   {
     String token = uaaTokenRequester.getToken();
     UpdateTenantConfigurationRequestBody updateTenantConfigurationRequestBody = new UpdateTenantConfigurationRequestBody.UpdateTenantConfigurationRequestBodyBuilder()
-        .setFailWebhook(successWebhook)
-        .setSuccessWebhook(failWebhook)
+        .setFailWebhook(failWebhook)
+        .setSuccessWebhook(successWebhook)
         .build();
 
     try {
       Tenant tenant =  notificationServiceClient.updateTenant(token, updateTenantConfigurationRequestBody);
     }
-    catch (Exception ex)
-    {
-      ex.printStackTrace();
+    catch (NotificationClientException e) {
+      printNotificationException(e);
+    } catch (RequestException e) {
+      printRequestException(e);
     }
+  }
+
+  private void printRequestException(RequestException requestException)
+  {
+    System.out.println("===REQUEST EXCEPTION===");
+    System.out.println(requestException.getMessage());
+    System.out.println(requestException.getUrl());
+    System.out.println(requestException.getStatus());
+    System.out.println(requestException.getStatusMessage());
+    System.out.println(requestException.getDetails());
+    System.out.println("=======================");
+  }
+
+  private void printNotificationException(NotificationClientException notificationClientException)
+  {
+    System.out.println("===NOTIFICATION EXCEPTION===");
+    System.out.println(notificationClientException.getMessage());
+    System.out.println(notificationClientException.getDetails());
+    System.out.println("=======================");
   }
 }
