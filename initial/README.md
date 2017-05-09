@@ -356,7 +356,7 @@ That’s it.  We can build and deploy our sample app on Predix and start receivi
 ##Extra Credit
 If you download the complete code, there are two extra functions that we did not cover printEmailEvents and configureTenant.  These functions utilize some extra functionality with referenced in the intro but did not cover as a part of this exercise, but are very useful when using the service.  For more information you can reach out to me directly at dat.nguyen@ge.com or the team at ev-notification@ge.com.
 
-##Notes
+## Notes
 1. You can always manually configure the Tenant by getting the information directly using the cloud foundry CLI.
 
 2. Send Email and Send Template Email request can be found in the include [Postman collection](https://github.com/ge-emerging-verticals-src/notification-sample-app/tree/master/Postman).
