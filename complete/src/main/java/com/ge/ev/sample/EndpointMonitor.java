@@ -19,8 +19,8 @@ import com.ge.ev.notification.client.requests.email.RecipientType;
 import com.ge.ev.notification.client.requests.email.SendEmailRequestBody;
 import com.ge.ev.notification.client.requests.email.SendEmailRequestBodyRecipient;
 import com.ge.ev.notification.client.requests.email.SendTemplateEmailRequestBody;
-import com.ge.ev.notification.client.requests.template.CreateMatchersRequestBody;
 import com.ge.ev.notification.client.requests.template.CreateRecipientsRequestBody;
+import com.ge.ev.notification.client.requests.template.MatchersRequestBody;
 import com.ge.ev.notification.client.requests.template.TemplateRequestBody;
 import com.ge.ev.notification.client.requests.tenant.UpdateTenantConfigurationRequestBody;
 import com.ge.ev.notification.client.response.SendEmailResponse;
@@ -148,8 +148,8 @@ public class EndpointMonitor
 
     //Create a matcher for HIGH alerts
     try {
-      CreateMatchersRequestBody createMatchersRequestBody = new CreateMatchersRequestBody.CreateMatchersRequestBodyBuilder("$.[?(@.alert in ['HIGH'])]").build();
-      this.highAlertMatcher = notificationServiceClient.createMatcher(token, this.template, createMatchersRequestBody);
+      MatchersRequestBody matchersRequestBody = new MatchersRequestBody.MatchersRequestBodyBuilder("$.[?(@.alert in ['HIGH'])]").build();
+      this.highAlertMatcher = notificationServiceClient.createMatcher(token, this.template, matchersRequestBody);
     }
     catch (NotificationClientException e) {
       printNotificationException(e);
@@ -172,8 +172,8 @@ public class EndpointMonitor
 
     //Create a matcher for LOW alerts
     try {
-      CreateMatchersRequestBody createMatchersRequestBody = new CreateMatchersRequestBody.CreateMatchersRequestBodyBuilder("$.[?(@.alert in ['LOW'])]").build();
-      this.lowAlertMatcher = notificationServiceClient.createMatcher(token, this.template, createMatchersRequestBody);
+      MatchersRequestBody matchersRequestBody = new MatchersRequestBody.MatchersRequestBodyBuilder("$.[?(@.alert in ['LOW'])]").build();
+      this.lowAlertMatcher = notificationServiceClient.createMatcher(token, this.template, matchersRequestBody);
     }
     catch (NotificationClientException e) {
       printNotificationException(e);
