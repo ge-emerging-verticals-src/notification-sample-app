@@ -83,7 +83,7 @@ public class EndpointMonitor
     NotificationServiceEnvironmentElement notificationServiceEnvironmentElement = null;
     try
     {
-      ServiceEnvironment serviceEnvironment = new ServiceEnvironment();
+      ServiceEnvironment serviceEnvironment = new ServiceEnvironment.ServiceEnvironmentBuilder().build();
       notificationServiceEnvironmentElement = serviceEnvironment.getNotificationServiceElementByName(notificationServiceName);
     }
     catch (ServiceEnvironmentException e)
@@ -256,6 +256,7 @@ public class EndpointMonitor
 
   private void SendAlert(AlertLevel alertLevel)
   {
+    //Get heap usage
     Runtime runtime = Runtime.getRuntime();
     Double heap_usage = ( (double) (runtime.totalMemory() - runtime.freeMemory()) /  runtime.totalMemory() * 1.0) * 100.0;
 

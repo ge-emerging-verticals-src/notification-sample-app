@@ -361,7 +361,7 @@ If you download the complete code, there are two extra functions that we did not
 
 2. Send Email and Send Template Email request can be found in the include [Postman collection](https://github.com/ge-emerging-verticals-src/notification-sample-app/tree/master/Postman).
 
-3. Templates use Thymeleaf Java template engine. More info can be found [here](http://www.thymeleaf.org/.)
+3. Templates use Mustache Java template engine. More info can be found [here](https://mustache.github.io/)
 
 4. Create Template and Upload Template request can be found in the include [Postman collection](https://github.com/ge-emerging-verticals-src/notification-sample-app/tree/master/Postman).
 

@@ -26,25 +26,4 @@ In this post, we will add an email alert feature that notifies different people 
 
 * [Predix UAA](https://www.predix.io/services/service.html?id=1172)
 * [Email Notification Framework](https://www.predix.io/services/service.html?id=2284)
-* Email Notification Framework Client SDK
-
-## Build
-
-```
-mvn clean install
-```
-
-## Deploying on Predix
-
-
-### Deploy Application
-
-```
-cf push -f manifest.yml
-```
-
-##Additioanl Resources
-
-* https://jsonpath.herokuapp.com/ 
-
-* http://www.thymeleaf.org/index.html
+* [Email Notification Framework Client SDK](https://github.com/ge-emerging-verticals-src/email-notification-framework-service-client-sdk)
